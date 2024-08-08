@@ -205,7 +205,7 @@ def plot_comparison(latest_data, previous_data, capacity_type):
     color_dict = {
         'cCoal': '#a0522d',         # Light brownish
         'dOil': '#2f4f4f',          # Dark gray
-        'eNatural Gas': '#000000',          # Almost black
+        'eNatural Gas': '#1f77b4',          # Almost black
         'sNuclear': '#ff69b4',      # Pink
         'wHydro': '#003366',        # Navy blue
         'ySolar': "#F5B800",        # Yellowish (towards yellow)
@@ -313,23 +313,63 @@ def new_plant_comparison(latest_df, previous_df, sheet):
     return new_plants_df
 
 def plot_new_plant_pie_chart(new_plants_df, sheet):
-    """Plots a pie chart of the energy sources for the new plants."""
+    """Plots a pie chart of the energy sources for the new plants with counts and capacities in GW, and aligns colors with the bar graph."""
+    
+    # Define the color dictionary (aligned with bar graphs)
+    color_dict = {
+        'cCoal': '#a0522d',         # Light brownish
+        'dOil': '#2f4f4f',          # Dark gray
+        'eNatural Gas': '#4682b4',  # Slightly more blue for Natural Gas
+        'sNuclear': '#ff69b4',      # Pink
+        'wHydro': '#003366',        # Navy blue
+        'ySolar': "#F5B800",        # Yellowish (towards yellow)
+        'xWind': '#39FF14',         # Light emerald green
+        'zStorage': '#d3d3d3',      # Light gray
+        'aOther': '#808080',        # Medium gray
+        'bOther RE': '#d2b48c'      # Light tan
+    }
+
+    # Map the 'Energy Source' to the color labels used in the bar chart
+    rename_dict = {
+        'Coal': 'cCoal',
+        'Oil': 'dOil',
+        'Natural Gas': 'eNatural Gas',
+        'Nuclear': 'sNuclear',
+        'Hydro': 'wHydro',
+        'Solar': "ySolar",
+        'Wind': 'xWind',
+        'Storage': 'zStorage',
+        'Other': 'aOther',
+        'Other RE': 'bOther RE'
+    }
+
+    # Apply renaming to ensure consistency in labels
+    new_plants_df['Energy Source'] = new_plants_df['Energy Source'].map(rename_dict)
+
+    # Pie chart for plant counts by energy source
     energy_source_counts = new_plants_df['Energy Source'].value_counts()
     
-    fig, ax = plt.subplots(figsize=(7, 7))
-    ax.pie(energy_source_counts, labels=energy_source_counts.index, autopct='%1.1f%%')
-    ax.set_title(f'New {sheet} Plants by Energy Source')
+    fig, ax1 = plt.subplots(figsize=(7, 7))
+    ax1.pie(energy_source_counts, labels=energy_source_counts.index.map(lambda x: x[1:]), 
+            autopct=lambda p: f'{int(p * sum(energy_source_counts) / 100)} plants', 
+            colors=[color_dict.get(x, '#d3d3d3') for x in energy_source_counts.index])
+    ax1.set_title(f'New {sheet} Plants by Energy Source')
     
     st.pyplot(fig)
 
-    # Pie chart for capacity distribution by energy source
+    # Pie chart for capacity distribution by energy source (in GW)
     energy_source_capacity = new_plants_df.groupby('Energy Source')['Nameplate Capacity (MW)'].sum()
+    total_capacity_mw = new_plants_df['Nameplate Capacity (MW)'].sum()
+    st.write("Total capacity for new units: ", total_capacity_mw)
     
-    fig, ax = plt.subplots(figsize=(14, 7))
-    ax.pie(energy_source_capacity, labels=energy_source_capacity.index, autopct='%1.1f%%')
-    ax.set_title(f'New {sheet} Plants Capacity Distribution by Energy Source')
+    fig, ax2 = plt.subplots(figsize=(7, 7))
+    ax2.pie(energy_source_capacity, labels=energy_source_capacity.index.map(lambda x: x[1:]), 
+            autopct=lambda p: f'{p * sum(energy_source_capacity) / 100:.1f} MW', 
+            colors=[color_dict.get(x, '#d3d3d3') for x in energy_source_capacity.index])
+    ax2.set_title(f'New {sheet} Plants Capacity Distribution by Energy Source (MW)')
     
     st.pyplot(fig)
+
 
 
 def main():
@@ -396,4 +436,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
