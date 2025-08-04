@@ -374,65 +374,77 @@ def plot_new_plant_pie_chart(new_plants_df, sheet):
 
 def main():
     st.title("EIA-860M Capacity Data Comparison")
-    
-    # Define base URL
+
     base_url = "https://www.eia.gov/electricity/data/eia860m/xls"
-    
-    # Get latest file URL
+
     latest_url, latest_year, latest_month = get_latest_file_url(base_url)
-    
+
     if latest_url:
         st.write(f"Latest file URL: {latest_url}")
-        
-        # Get previous file URL
+
         previous_url = get_previous_file_url(base_url, latest_year, latest_month)
         st.write(f"Previous file URL: {previous_url}")
-        
-        # Download files
+
         latest_file = download_excel_file(latest_url)
         previous_file = download_excel_file(previous_url)
-        
+
         if latest_file and previous_file:
-            # Load files into DataFrames
             sheets = ['Operating', 'Planned', 'Retired']
             latest_dfs = pd.read_excel(latest_file, sheet_name=sheets)
             previous_dfs = pd.read_excel(previous_file, sheet_name=sheets)
-            
+
             latest_sums = {sheet: sum_nameplate_capacity(latest_dfs[sheet]) for sheet in sheets}
             previous_sums = {sheet: sum_nameplate_capacity(previous_dfs[sheet]) for sheet in sheets}
-            
+
             latest_counts = {sheet: count_plants(latest_dfs[sheet]) for sheet in sheets}
             previous_counts = {sheet: count_plants(previous_dfs[sheet]) for sheet in sheets}
-            
-            # Create tabs for each sheet
+
             tab1, tab2, tab3 = st.tabs(sheets)
-            
+
             with tab1:
                 st.header(f"{sheets[0]} Plants")
-                plot_comparison({sheets[0]: latest_dfs[sheets[0]]}, {sheets[0]: previous_dfs[sheets[0]]}, 'Operating')
-                
-                
-                # New plant comparison
-                new_plants_operating_df = new_plant_comparison(latest_dfs[sheets[0]], previous_dfs[sheets[0]], 'Operating')
-                plot_new_plant_pie_chart(new_plants_operating_df, 'Operating')
-                
+                states = sorted(latest_dfs[sheets[0]]['State'].dropna().unique())
+                selected_state = st.selectbox("Select a state", ["All"] + states, key="op")
+                if selected_state != "All":
+                    latest_df = latest_dfs[sheets[0]][latest_dfs[sheets[0]]['State'] == selected_state]
+                    previous_df = previous_dfs[sheets[0]][previous_dfs[sheets[0]]['State'] == selected_state]
+                else:
+                    latest_df = latest_dfs[sheets[0]]
+                    previous_df = previous_dfs[sheets[0]]
+
+                plot_comparison({sheets[0]: latest_df}, {sheets[0]: previous_df}, 'Operating')
+                new_df = new_plant_comparison(latest_df, previous_df, 'Operating')
+                plot_new_plant_pie_chart(new_df, 'Operating')
+
             with tab2:
                 st.header(f"{sheets[1]} Plants")
-                plot_comparison({sheets[1]: latest_dfs[sheets[1]]}, {sheets[1]: previous_dfs[sheets[1]]}, 'Planned')
-                
-                
-                # New plant comparison
-                new_plants_planned_df = new_plant_comparison(latest_dfs[sheets[1]], previous_dfs[sheets[1]], 'Planned')
-                plot_new_plant_pie_chart(new_plants_planned_df, 'Planned')
-                
+                states = sorted(latest_dfs[sheets[1]]['State'].dropna().unique())
+                selected_state = st.selectbox("Select a state", ["All"] + states, key="pl")
+                if selected_state != "All":
+                    latest_df = latest_dfs[sheets[1]][latest_dfs[sheets[1]]['State'] == selected_state]
+                    previous_df = previous_dfs[sheets[1]][previous_dfs[sheets[1]]['State'] == selected_state]
+                else:
+                    latest_df = latest_dfs[sheets[1]]
+                    previous_df = previous_dfs[sheets[1]]
+
+                plot_comparison({sheets[1]: latest_df}, {sheets[1]: previous_df}, 'Planned')
+                new_df = new_plant_comparison(latest_df, previous_df, 'Planned')
+                plot_new_plant_pie_chart(new_df, 'Planned')
+
             with tab3:
                 st.header(f"{sheets[2]} Plants")
-                plot_comparison({sheets[2]: latest_dfs[sheets[2]]}, {sheets[2]: previous_dfs[sheets[2]]}, 'Retired')
-                
-                
-                # New plant comparison
-                new_plants_retired_df = new_plant_comparison(latest_dfs[sheets[2]], previous_dfs[sheets[2]], 'Retired')
-                plot_new_plant_pie_chart(new_plants_retired_df, 'Retired')
+                states = sorted(latest_dfs[sheets[2]]['State'].dropna().unique())
+                selected_state = st.selectbox("Select a state", ["All"] + states, key="rt")
+                if selected_state != "All":
+                    latest_df = latest_dfs[sheets[2]][latest_dfs[sheets[2]]['State'] == selected_state]
+                    previous_df = previous_dfs[sheets[2]][previous_dfs[sheets[2]]['State'] == selected_state]
+                else:
+                    latest_df = latest_dfs[sheets[2]]
+                    previous_df = previous_dfs[sheets[2]]
+
+                plot_comparison({sheets[2]: latest_df}, {sheets[2]: previous_df}, 'Retired')
+                new_df = new_plant_comparison(latest_df, previous_df, 'Retired')
+                plot_new_plant_pie_chart(new_df, 'Retired')
 
 if __name__ == "__main__":
     main()
