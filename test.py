@@ -102,7 +102,7 @@ def rename_columns(df):
     if df.columns[2] == 'Unnamed: 2':
         df.rename(columns={df.columns[2]: 'Plant ID'}, inplace=True)
     if df.columns[6] == 'Unnamed: 6':
-        df.rename(columns={'df.columns[6]': 'State'}, inplace=True)
+        df.rename(columns={df.columns[6]: 'State'}, inplace=True)
         df['State'] = df['State'].map(STATE_ABBR_MAP).fillna(df['State'])
 
     energy_code_conversion = {
