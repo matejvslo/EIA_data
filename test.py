@@ -6,6 +6,20 @@ import pandas as pd
 from datetime import datetime
 import matplotlib.pyplot as plt
 
+STATE_ABBR_MAP = {
+    'AK': 'Alaska', 'AL': 'Alabama', 'AR': 'Arkansas', 'AZ': 'Arizona', 'CA': 'California',
+    'CO': 'Colorado', 'CT': 'Connecticut', 'DC': 'District of Columbia', 'DE': 'Delaware',
+    'FL': 'Florida', 'GA': 'Georgia', 'HI': 'Hawaii', 'IA': 'Iowa', 'ID': 'Idaho', 'IL': 'Illinois',
+    'IN': 'Indiana', 'KS': 'Kansas', 'KY': 'Kentucky', 'LA': 'Louisiana', 'MA': 'Massachusetts',
+    'MD': 'Maryland', 'ME': 'Maine', 'MI': 'Michigan', 'MN': 'Minnesota', 'MO': 'Missouri',
+    'MS': 'Mississippi', 'MT': 'Montana', 'NC': 'North Carolina', 'ND': 'North Dakota',
+    'NE': 'Nebraska', 'NH': 'New Hampshire', 'NJ': 'New Jersey', 'NM': 'New Mexico', 'NV': 'Nevada',
+    'NY': 'New York', 'OH': 'Ohio', 'OK': 'Oklahoma', 'OR': 'Oregon', 'PA': 'Pennsylvania',
+    'RI': 'Rhode Island', 'SC': 'South Carolina', 'SD': 'South Dakota', 'TN': 'Tennessee',
+    'TX': 'Texas', 'UT': 'Utah', 'VA': 'Virginia', 'VT': 'Vermont', 'WA': 'Washington',
+    'WI': 'Wisconsin', 'WV': 'West Virginia', 'WY': 'Wyoming'
+}
+
 def get_file_url(base_url, year, month):
     """Constructs the URL for a given year and month."""
     month_name = calendar.month_name[month].lower()
@@ -87,6 +101,9 @@ def rename_columns(df):
         df.rename(columns={df.columns[16]: 'Energy Source'}, inplace=True)
     if df.columns[2] == 'Unnamed: 2':
         df.rename(columns={df.columns[2]: 'Plant ID'}, inplace=True)
+    if 'Plant State' in df.columns:
+        df.rename(columns={'Plant State': 'State'}, inplace=True)
+        df['State'] = df['State'].map(STATE_ABBR_MAP).fillna(df['State'])
 
     energy_code_conversion = {
         "AB": "Other",
