@@ -92,6 +92,7 @@ def download_excel_file(url):
         return None
 
 def rename_columns(df):
+    print(df.head)
     """Renames columns to 'Nameplate Capacity (MW)' if it is unnamed and located in column index 12."""
     if df.columns[12] == 'Unnamed: 12':
         df.rename(columns={df.columns[12]: 'Nameplate Capacity (MW)'}, inplace=True)
