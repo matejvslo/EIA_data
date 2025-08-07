@@ -26,6 +26,10 @@ def get_file_url(base_url, year, month):
     file_url = f"{base_url}/{month_name}_generator{year}.xlsx"
     return file_url
 
+@st.cache_data
+def cached_read_excel(file_io, sheet_name=None):
+    return pd.read_excel(file_io, sheet_name=sheet_name)
+
 def file_exists(url):
     """Checks if the file at the given URL exists."""
     try:
@@ -407,8 +411,8 @@ def main():
 
         if latest_file and previous_file:
             sheets = ['Operating', 'Planned', 'Retired']
-            latest_dfs = pd.read_excel(latest_file, sheet_name=sheets)
-            previous_dfs = pd.read_excel(previous_file, sheet_name=sheets)
+            latest_dfs = cached_read_excel(latest_file, sheet_name=sheets)
+            previous_dfs = cached_read_excel(previous_file, sheet_name=sheets)
 
             latest_sums = {sheet: sum_nameplate_capacity(latest_dfs[sheet]) for sheet in sheets}
             previous_sums = {sheet: sum_nameplate_capacity(previous_dfs[sheet]) for sheet in sheets}
