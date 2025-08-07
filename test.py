@@ -79,21 +79,23 @@ def get_previous_file_url(base_url, year, month):
     
     return f"https://www.eia.gov/electricity/data/eia860m/archive/xls/{month_name}_generator{year}.xlsx"
 
+@st.cache_data
 def download_excel_file(url):
     """Downloads the Excel file from the given URL."""
-    try:
-        response = requests.get(url)
-        response.raise_for_status()  # Check for request errors
-        
-        content_type = response.headers.get('Content-Type', '')
-        if 'excel' in content_type or 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' in content_type:
-            return BytesIO(response.content)
-        else:
-            st.error("Downloaded file is not an Excel file.")
+    with st.spinner("Downloading file..."):
+        try:
+            response = requests.get(url)
+            response.raise_for_status()  # Check for request errors
+            
+            content_type = response.headers.get('Content-Type', '')
+            if 'excel' in content_type or 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' in content_type:
+                return BytesIO(response.content)
+            else:
+                st.error("Downloaded file is not an Excel file.")
+                return None
+        except requests.exceptions.RequestException as err:
+            st.error(f"Request Exception occurred: {err}")
             return None
-    except requests.exceptions.RequestException as err:
-        st.error(f"Request Exception occurred: {err}")
-        return None
 
 def rename_columns(df):
     """Renames columns to 'Nameplate Capacity (MW)' if it is unnamed and located in column index 12."""
